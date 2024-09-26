@@ -2,12 +2,15 @@ import UserService from '../Service/UserService';
 
 class UserController{
 
+    async findAllUsers(req,res){
+        return UserService.findAllUsers(req,res);
+    }
     async createUser (req,res){
         return UserService.createUser(req,res);
     }
 
-    async searchUser (req,res){
-        return UserService.searchUser(req,res);
+    async findUser (req,res){
+        return UserService.findUser(req,res);
 
     }
 

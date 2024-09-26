@@ -1,10 +1,12 @@
-import userRoutes from './userRoutes';
-import { Router} from 'express';
+import userRoutes from "./userRoutes";
+import authRoutes from "./authRoutes";
+import messageRoutes from "./messageRoutes";
+import { Router } from "express";
 
-const router =Router()
+const router = Router();
 
+router.use("/api/user", userRoutes);
+router.use("/api/auth", authRoutes);
+router.use("/api/message", messageRoutes);
 
-router.use("/api/user",userRoutes);
-
-
-module.exports = router;   
+module.exports = router;
