@@ -1,4 +1,4 @@
-import MessageService from "../Service/MessageService"
+import MessageService from "../Service/MessageService.js"
 
 class MessageController{
 

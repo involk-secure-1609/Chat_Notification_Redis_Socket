@@ -1,6 +1,6 @@
-import userRoutes from "./userRoutes";
-import authRoutes from "./authRoutes";
-import messageRoutes from "./messageRoutes";
+import userRoutes from "./userRoutes.js";
+import authRoutes from "./authRoutes.js";
+import messageRoutes from "./messageRoutes.js";
 import { Router } from "express";
 
 const router = Router();
@@ -8,5 +8,4 @@ const router = Router();
 router.use("/api/user", userRoutes);
 router.use("/api/auth", authRoutes);
 router.use("/api/message", messageRoutes);
-
-module.exports = router;
+export default router;

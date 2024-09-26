@@ -1,4 +1,4 @@
-import prisma from "../prisma_client";
+import prisma from "../prisma_client.js";
 import bcrypt from "bcrypt"
 class AuthService{
 

@@ -1,9 +1,13 @@
-const express = require("express");
-const { createServer } = require("http");
-const { Server } = require("socket.io");
-const cors = require("cors");
-import { redisClient, redisMessageSubscriber,redisNotificationSubscriber } from "./redis";
-import routes from "./routes/router";
+import express from "express";
+import { createServer } from "http";
+import { Server } from "socket.io";
+import cors from "cors";
+import {
+  redisClient,
+  redisMessageSubscriber,
+  redisNotificationSubscriber,
+} from "./redis.js";
+import routes from "./routes/router.js";
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
@@ -15,40 +19,44 @@ const io = new Server(httpServer, {
   //   origin: "http://localhost:3000",
   // },
 });
+const notificationListener = async(message, channel) => {
+  console.log(channel);
+  console.log(message);
+  // const SocketID = await redisClient.HGET(
+  //   "user_to_socket",
+  //   DecodedMessage.receiverId
+  // );
+
+  // io.to(SocketID).emit("getMessage", DecodedMessage);
+};
+const messageListener = async (message, channel) => {
+  console.log(channel);
+  console.log(message);
+  const SocketID = await redisClient.HGET(
+    "user_to_socket",
+    channel.toString(),
+  );
+
+   io.to(SocketID).emit("getMessage", DecodedMessage);
+};
 
 io.on("connection", (socket) => {
+  console.log("io connection established");
   // ...
   socket.on("initialize", async (userId) => {
     const socketId = socket.id;
     await redisClient.HSET("user_to_socket", userId, socketId);
-    await redisMessageSubscriber.subscribe(userId);
-    await redisNotificationSubscriber.subscribe("notifications");
+    redisMessageSubscriber.subscribe(userId, messageListener);
   });
 });
 
-redisMessageSubscriber.on("message", async (channel, message) => {
-  console.log(channel);
-  const DecodedMessage = JSON.parse(message);
-  const SocketID = await redisClient.HGET(
-    "user_to_socket",
-    DecodedMessage.receiverId
-  );
+redisNotificationSubscriber.subscribe("notifications", notificationListener);
 
-  io.to(SocketID).emit("getMessage", DecodedMessage);
+redisMessageSubscriber.on("error", function (e) {
+  console.log("publisher", e.stack);
 });
-
-redisNotificationSubscriber.on("message", async (channel, message) =>{
-  console.log(channel);
-  console.log(message);
-
+httpServer.listen(8000, () => {
+  console.log("server listening on port 8000");
 });
-redisNotificationSubscriber.on('error', function(e) {
-   console.log('subscriber', e.stack); 
-});
-
-redisMessageSubscriber.on('error', function(e) {
-   console.log('publisher', e.stack); 
-});
-httpServer.listen(8000);
 
 app.use(routes);

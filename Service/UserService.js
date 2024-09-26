@@ -1,8 +1,8 @@
-import prisma from "../prisma_client";
+import prisma from "../prisma_client.js";
 import bcrypt from "bcrypt";
 class UserService {
   async createUser(req, res) {
-    const { name, email, password } = req;
+    const { name, email, password } = req.body;
     const userAlreadyExists = await prisma.user.findUnique({
       where: {
         email: email,
@@ -10,15 +10,11 @@ class UserService {
     });
 
     if (userAlreadyExists) {
-      return res.status(400).json("User with this email already exists");
+      return res.status(400).json({message:"User with this email already exists"});
     }
+    const saltRounds = 12;
+    const hashedPassword = await bcrypt.hash(password,saltRounds);
 
-    const hashedPassword = bcrypt.genSalt(saltRounds, function (err, salt) {
-      bcrypt.hash(myPlaintextPassword, salt, function (err, hash) {
-        // Store hash in your password DB.
-        return hash;
-      });
-    });
     const user = await prisma.user.create({
       data: {
         name: name,
@@ -27,7 +23,8 @@ class UserService {
       },
     });
 
-    return res.status(200).json("User created successfully");
+    console.log(user);
+    return res.status(200).json({ message: "User created successfully",user });
   }
 
   async findAllUsers(req, res) {
@@ -49,7 +46,7 @@ class UserService {
     const userId = req.params.id;
     const { name, email, password } = req.body;
 
-    const user=await prisma.user.update({
+    const user = await prisma.user.update({
       where: {
         id: userId,
       },
@@ -64,14 +61,14 @@ class UserService {
   }
 
   async deleteUser(req, res) {
-    const userId = req.params.id;
+    const {email} = req.body;
     await prisma.user.delete({
       where: {
-        id: userId,
+        email: email,
       },
     });
 
-    return res.status(200).json(userId);
+    return res.status(200).json(email);
   }
 }
 

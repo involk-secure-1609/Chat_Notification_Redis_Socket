@@ -1,5 +1,5 @@
-import prisma from "../prisma_client";
-import {redisClient,redisSubscriber} from "../redis";
+import prisma from "../prisma_client.js";
+import {redisClient} from "../redis.js";
 
 
 class MessageService{
