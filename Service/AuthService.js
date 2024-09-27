@@ -3,8 +3,8 @@ import bcrypt from "bcrypt"
 class AuthService{
 
     async login(req, res){
-        const {email,password}=req;
-        const user=prisma.user.findUnique({
+        const {email,password}=req.body;
+        const user=await prisma.user.findUnique({
             where:{
                 email: email
             }
@@ -14,12 +14,12 @@ class AuthService{
         {
             return res.status(400).json("Please create an account.")
         }
-        const check=await bcrypt.compare(user.password,password);
+        const check=await bcrypt.compare(password,user.password);
         if(!check)
         {
             return res.status(400).json("Your password is incorrect,Please try again.")
         }
-        return res.status(200).json("You have logged in successfully.")
+        return res.status(200).json(user);
     }
 }
 

@@ -32,7 +32,7 @@ class UserService {
     return res.status(200).json(allUsers);
   }
   async findUser(req, res) {
-    const { email } = req;
+    const { email } = req.body;
     const user = await prisma.user.findUnique({
       where: {
         email: email,

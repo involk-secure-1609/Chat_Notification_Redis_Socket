@@ -5,14 +5,15 @@ import {redisClient} from "../redis.js";
 class MessageService{
 
     async sendMessage(req,res){
+        const data=req.body;
         const Message={
-            message:req.message,
-            senderId:req.senderId,
-            receiverId:req.receiverId,
-            conversationId:req.conversationId,
+            message:data.message,
+            senderId:data.senderId,
+            receiverId:data.receiverId,
+            conversationId:data.conversationId,
         }
 
-        await redisClient.publish(req.receiverId,JSON.stringify(Message));
+        await redisClient.publish(data.receiverId,JSON.stringify(Message));
 
         return res.status(200).json("Message sent successfully");
     }

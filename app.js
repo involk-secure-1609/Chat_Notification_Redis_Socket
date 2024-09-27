@@ -15,38 +15,43 @@ app.use(cors());
 const httpServer = createServer(app);
 const io = new Server(httpServer, {
   /* options */
-  // cors: {
-  //   origin: "http://localhost:3000",
-  // },
+  cors: {
+    origin: "http://localhost:3000",
+  },
 });
 const notificationListener = async(message, channel) => {
   console.log(channel);
   console.log(JSON.parse(message));
-  // const SocketID = await redisClient.HGET(
-  //   "user_to_socket",
-  //   DecodedMessage.receiverId
-  // );
+  await redisClient.HGETALL("user_to_socket");
+  const SocketID = await redisClient.HGET(
+    "user_to_socket",
+    DecodedMessage.receiverId
+  );
 
-  // io.to(SocketID).emit("getMessage", DecodedMessage);
+  io.to(SocketID).emit("getNotification", JSON.parse(message));
 };
 const messageListener = async (message, channel) => {
   console.log(channel);
-  console.log(message);
+  console.log(JSON.parse(message));
+  await redisClient.HGETALL("user_to_socket");
   const SocketID = await redisClient.HGET(
     "user_to_socket",
     channel.toString(),
   );
-
-   io.to(SocketID).emit("getMessage", DecodedMessage);
+  console.log(SocketID);
+   io.to(SocketID).emit("getMessage", JSON.parse(message));
 };
 
 io.on("connection", (socket) => {
   console.log("io connection established");
+  console.log(socket.id);
   // ...
   socket.on("initialize", async (userId) => {
-    const socketId = socket.id;
-    await redisClient.HSET("user_to_socket", userId, socketId);
-    redisMessageSubscriber.subscribe(userId, messageListener);
+   
+    console.log(userId)
+    console.log("before setting user_id to socket_id");
+    await redisClient.HSET("user_to_socket", userId, socket.id);
+    redisMessageSubscriber.subscribe(userId.toString(), messageListener);
   });
 });
 
