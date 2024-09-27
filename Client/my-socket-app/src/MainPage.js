@@ -29,10 +29,11 @@ function MainPage() {
     };
 
     const notificationListener = (notification) => {
-      console.log("Notification received: ", notification);
+      const notificationMessage = JSON.stringify(notification);
+      console.log("Notification received: ", notificationMessage);
       setNotifications((prevNotifications) => [
         ...prevNotifications,
-        notification,
+        notificationMessage,
       ]);
     };
 

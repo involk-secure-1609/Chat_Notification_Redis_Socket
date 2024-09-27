@@ -20,26 +20,26 @@ const io = new Server(httpServer, {
   },
 });
 const notificationListener = async(message, channel) => {
-  console.log(channel);
   console.log(JSON.parse(message));
-  await redisClient.HGETALL("user_to_socket");
+  const parsedMessage = JSON.parse(message);
+  // await redisClient.HGETALL("user_to_socket");
   const SocketID = await redisClient.HGET(
     "user_to_socket",
-    DecodedMessage.receiverId
+    parsedMessage.userId
   );
 
-  io.to(SocketID).emit("getNotification", JSON.parse(message));
+  io.to(SocketID).emit("getNotification", parsedMessage);
 };
 const messageListener = async (message, channel) => {
-  console.log(channel);
   console.log(JSON.parse(message));
+  const parsedMessage = JSON.parse(message);
   await redisClient.HGETALL("user_to_socket");
   const SocketID = await redisClient.HGET(
     "user_to_socket",
     channel.toString(),
   );
   console.log(SocketID);
-   io.to(SocketID).emit("getMessage", JSON.parse(message));
+   io.to(SocketID).emit("getMessage", parsedMessage);
 };
 
 io.on("connection", (socket) => {
