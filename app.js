@@ -21,7 +21,7 @@ const io = new Server(httpServer, {
 });
 const notificationListener = async(message, channel) => {
   console.log(channel);
-  console.log(message);
+  console.log(JSON.parse(message));
   // const SocketID = await redisClient.HGET(
   //   "user_to_socket",
   //   DecodedMessage.receiverId
