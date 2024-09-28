@@ -58,8 +58,12 @@ io.on("connection", (socket) => {
 redisNotificationSubscriber.subscribe("notifications", notificationListener);
 
 redisMessageSubscriber.on("error", function (e) {
-  console.log("publisher", e.stack);
+  console.log("message subscriber error", e.stack);
 });
+redisNotificationSubscriber.on("error", function (e) {
+  console.log("notification subscriber error", e.stack);
+});
+
 httpServer.listen(8000, () => {
   console.log("server listening on port 8000");
 });
