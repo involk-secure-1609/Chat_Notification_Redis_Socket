@@ -19,27 +19,36 @@ const io = new Server(httpServer, {
     origin: "http://localhost:3000",
   },
 });
-const notificationListener = async(message, channel) => {
+const notificationListener = async (message, channel) => {
   console.log(JSON.parse(message));
   const parsedMessage = JSON.parse(message);
-  // await redisClient.HGETALL("user_to_socket");
-  const SocketID = await redisClient.HGET(
-    "user_to_socket",
-    parsedMessage.userId
-  );
+  try {
+    // await redisClient.HGETALL("user_to_socket");
+    const SocketID = await redisClient.HGET(
+      "user_to_socket",
+      parsedMessage.userId
+    );
 
-  io.to(SocketID).emit("getNotification", parsedMessage);
+    io.to(SocketID).emit("getNotification", parsedMessage);
+  } catch (error) {
+    console.log("notification listener had an error:", error);
+  }
 };
 const messageListener = async (message, channel) => {
   console.log(JSON.parse(message));
   const parsedMessage = JSON.parse(message);
-  await redisClient.HGETALL("user_to_socket");
-  const SocketID = await redisClient.HGET(
-    "user_to_socket",
-    channel.toString(),
-  );
-  console.log(SocketID);
-   io.to(SocketID).emit("getMessage", parsedMessage);
+
+  try {
+    await redisClient.HGETALL("user_to_socket");
+    const SocketID = await redisClient.HGET(
+      "user_to_socket",
+      channel.toString()
+    );
+    console.log(SocketID);
+    io.to(SocketID).emit("getMessage", parsedMessage);
+  } catch (error) {
+    console.log("message listener had an error:", error);
+  }
 };
 
 io.on("connection", (socket) => {
@@ -47,11 +56,14 @@ io.on("connection", (socket) => {
   console.log(socket.id);
   // ...
   socket.on("initialize", async (userId) => {
-   
-    console.log(userId)
+    console.log(userId);
     console.log("before setting user_id to socket_id");
-    await redisClient.HSET("user_to_socket", userId, socket.id);
-    redisMessageSubscriber.subscribe(userId.toString(), messageListener);
+    try {
+      await redisClient.HSET("user_to_socket", userId, socket.id);
+      redisMessageSubscriber.subscribe(userId.toString(), messageListener);
+    } catch (error) {
+      console.log("error during socket listener initialization:", error);
+    }
   });
 });
 
@@ -63,7 +75,6 @@ redisMessageSubscriber.on("error", function (e) {
 redisNotificationSubscriber.on("error", function (e) {
   console.log("notification subscriber error", e.stack);
 });
-
 httpServer.listen(8000, () => {
   console.log("server listening on port 8000");
 });

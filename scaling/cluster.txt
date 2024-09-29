@@ -1,0 +1,133 @@
+If you want to use the cluster module to scale then this code works
+
+
+// import express from "express";
+// import { Server } from "socket.io";
+// import cors from "cors";
+// import cluster from "cluster";
+// import os from "os";
+// import { setupMaster, setupWorker } from "@socket.io/sticky";
+// import { createServer } from "http";
+// import {
+//   redisClient,
+//   redisMessageSubscriber,
+//   redisNotificationSubscriber,
+// } from "./redis.js";
+// import routes from "./routes/router.js";
+
+// const numCPUs =os.cpus().length;
+// // const numCPUs = 4;
+
+// if (cluster.isPrimary) {
+//   console.log(numCPUs);
+//   console.log(`Master ${process.pid} is running`);
+//   const httpServer = createServer();
+//   setupMaster(httpServer, {
+//     loadBalancingMethod: "least-connection",
+//   });
+
+//   const port = process.env.PORT || 8000;
+//   httpServer.listen(port, () => {
+//     console.log(`Server listening on port ${port}`);
+//   });
+
+//   for (let i = 0; i < numCPUs; i++) {
+//     cluster.fork();
+//   }
+
+//   cluster.on("exit", (worker) => {
+//     console.log(`Worker ${worker.process.pid} died`);
+//     cluster.fork();
+//   });
+// } else {
+//   const app = express();
+//   app.use(express.json());
+//   app.use(express.urlencoded({ extended: false }));
+//   app.use(cors());
+//   app.use(routes);
+
+//   console.log(`Worker ${process.pid} started`);
+//   const httpServer = createServer(app);
+//   const io = new Server(httpServer, {
+//     cors: {
+//       origin: "http://localhost:3000",
+//     },
+//   });
+//   setupWorker(io);
+
+//   const messageListener = async (message, channel) => {
+//     try {
+//       const parsedMessage = JSON.parse(message);
+//       const socketId = await redisClient.HGET(
+//         "user_to_socket",
+//         channel.toString()
+//       );
+//       console.log(socketId + " has listened to message on " + process.pid);
+//       if (socketId) {
+//         io.to(socketId).emit("getMessage", parsedMessage);
+//       }
+//     } catch (error) {
+//       console.error("Error in messageListener:", error);
+//     }
+//   };
+
+//   const notificationListener = async (message, channel) => {
+//     try {
+//       const parsedMessage = JSON.parse(message);
+//       const socketId = await redisClient.HGET(
+//         "user_to_socket",
+//         parsedMessage.userId
+//       );
+//       console.log(socketId + " has listened to notification on " + process.pid);
+//       if (socketId) {
+//         io.to(socketId).emit("getNotification", parsedMessage);
+//       }
+//     } catch (error) {
+//       console.error("Error in notificationListener:", error);
+//     }
+//   };
+
+//   io.on("connection", (socket) => {
+//     console.log("New connection:", socket.id);
+//     console.log(socket.id + " is on process " + process.pid);
+//     socket.on("initialize", async (userId) => {
+//       try {
+//         console.log(
+//           "Connection has been established by " +
+//             userId +
+//             " with socketId: " +
+//             socket.id
+//         );
+//         await redisClient.HSET("user_to_socket", userId, socket.id);
+//         redisMessageSubscriber.subscribe(userId.toString(), messageListener);
+//       } catch (error) {
+//         console.error("Error in initialize:", error);
+//       }
+//     });
+
+//     redisNotificationSubscriber.subscribe(
+//       "notifications",
+//       notificationListener
+//     );
+
+//     redisMessageSubscriber.on("error", (error) => {
+//       console.error("Message subscriber error:", error);
+//     });
+
+//     redisNotificationSubscriber.on("error", (error) => {
+//       console.error("Notification subscriber error:", error);
+//     });
+
+//     // socket.on("disconnect", async () => {
+//     //   try {
+//     //     console.log("Disconnection has occured from", socket.id);
+//     //     // await redisClient.HDEL("user_to_socket", userId);
+//     //     await redisMessageSubscriber.unsubscribe(userId.toString());
+//     //     redisMessageSubscriber.removeListener("message", messageListener);
+//     //   } catch (error) {
+//     //     console.error("Error in disconnecting:", error);
+
+//     //   }
+//     // });
+//   });
+// }
