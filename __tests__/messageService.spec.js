@@ -22,9 +22,6 @@ describe("sending messages with Message Service", () => {
     redisNotificationSubscriber.disconnect();
   });
 
-  // beforeEach(() => {
-  //   jest.clearAllMocks();
-  // });
 
   it("message doesnt have appropriate arguments", async () => {
     //Promise needs a value to resolve which should be a number
